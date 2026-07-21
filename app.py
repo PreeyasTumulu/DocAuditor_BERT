@@ -24,7 +24,11 @@ import torch
 st.set_page_config(page_title="DocAuditor", page_icon="[]", layout="wide")
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DATA = Path("data/test_documents")
+
+# Resolve relative to this file, not the working directory. A relative path
+# silently yields an empty sample list whenever the app is launched from
+# anywhere other than the project root - which is exactly how it gets run.
+DATA = Path(__file__).resolve().parent / "data" / "test_documents"
 
 MODELS = {
     "pii":       "iiiorg/piiranha-v1-detect-personal-information",
@@ -127,9 +131,21 @@ def softmax(a):
 # Pipeline
 # --------------------------------------------------------------------------
 
+def is_section_marker(m, text):
+    """Reject numbers that merely look like section markers.
+
+    "at least 90 (ninety) days' prior written notice" was being split at "90",
+    inventing a clause whose reference was literally "90". A bare number
+    followed by "(" is a quantity, not a heading; dotted numbers always are.
+    """
+    nxt = text[m.end():m.end() + 1]
+    return ("." in m.group(1)) or nxt.isupper() or nxt == '"'
+
+
 @st.cache_data(show_spinner=False)
 def segment_clauses(text, min_chars=60, max_chars=1200):
-    cuts = [(0, "")] + [(m.start(), m.group(1)) for m in SECTION_RE.finditer(text)]
+    cuts = [(0, "")] + [(m.start(), m.group(1)) for m in SECTION_RE.finditer(text)
+                        if is_section_marker(m, text)]
     seen, ordered = set(), []
     for pos, lbl in sorted(cuts):
         if pos not in seen:
@@ -508,7 +524,7 @@ with tabs[0]:
     st.subheader("Document Auto-Router")
     st.caption("Zero-shot NLI classification. The verdict selects the PII policy "
                "used by the scanner, so routing changes downstream behaviour.")
-    if st.button("Classify document", key="route"):
+    if st.button("Classify document", key="btn_route"):
         r = route(text)
         st.session_state["route"] = r
     r = st.session_state.get("route")
@@ -527,7 +543,7 @@ with tabs[1]:
     st.subheader("PII Scanner")
     st.caption("Token classification with an overlapping sliding window, plus a "
                "deterministic regex layer for structurally regular identifiers.")
-    if st.button("Scan for PII", key="pii"):
+    if st.button("Scan for PII", key="btn_pii"):
         policy = (st.session_state.get("route") or {}).get("policy")
         st.session_state["pii"] = scan_pii(text, policy)
     findings = st.session_state.get("pii")
@@ -552,7 +568,7 @@ with tabs[2]:
                "copied verbatim from the text - never composed.")
     q = st.text_input("Question",
                       "How many days notice is required to terminate the agreement?")
-    if st.button("Ask", key="qa") and q.strip():
+    if st.button("Ask", key="btn_qa") and q.strip():
         emb = get_encoder().encode([c["text"] for c in clauses],
                                    convert_to_numpy=True,
                                    normalize_embeddings=True,
@@ -577,7 +593,7 @@ with tabs[3]:
                "entropy means the context does not pin the term down; entailing "
                "both a strict and a loose reading means genuine ambiguity.")
     own = st.text_area("Test your own sentence (optional)", "")
-    if st.button("Analyse", key="amb"):
+    if st.button("Analyse", key="btn_amb"):
         if own.strip():
             hits = [t for t in VAGUE_TERMS if term_pattern(t).search(own)]
             if not hits:
@@ -596,8 +612,20 @@ with tabs[3]:
             st.session_state["amb"] = ambiguity_report(clauses)
     rows = st.session_state.get("amb")
     if rows:
-        show = [{k: v for k, v in r.items() if k != "sentence"} for r in rows]
-        st.dataframe(pd.DataFrame(show), hide_index=True, use_container_width=True)
+        # top_predictions is a list of (token, probability) tuples. Streamlit
+        # serialises dataframes through Arrow, which cannot type a column of
+        # mixed tuples and raises ArrowTypeError - so flatten it to a string.
+        def _fmt(r):
+            out = {k: v for k, v in r.items() if k != "sentence"}
+            if isinstance(out.get("top_predictions"), (list, tuple)):
+                out["top_predictions"] = ", ".join(
+                    f"{w} ({p})" for w, p in out["top_predictions"])
+            if isinstance(out.get("entropy"), float):
+                out["entropy"] = round(out["entropy"], 2)
+            return out
+
+        st.dataframe(pd.DataFrame([_fmt(r) for r in rows]),
+                     hide_index=True, use_container_width=True)
         if rows and "sentence" in rows[0]:
             st.markdown("**Most ambiguous clause**")
             st.info(rows[0]["sentence"])
@@ -616,7 +644,7 @@ with tabs[4]:
     max_len = col3.slider("Max clause length (chars)", 150, 1500, 250, 50,
                           help="NLI degrades on long legal prose. Raising this "
                                "finds more but returns far more false positives.")
-    if st.button("Detect contradictions", key="contra"):
+    if st.button("Detect contradictions", key="btn_contra"):
         res, stats = detect_contradictions(clauses, min_sim=min_sim,
                                            min_score=min_score,
                                            max_clause_chars=max_len)
