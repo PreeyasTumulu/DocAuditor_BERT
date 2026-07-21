@@ -243,6 +243,7 @@ def build():
                        "and Compliance Review", SUB))
     s.append(table([
         [p("Student", CELLB), p("Preeyas Tumulu", CELL)],
+        [p("Student ID", CELLB), p("2023JULYVUGP0044", CELL)],
         [p("Subject", CELLB), p("Generative AI", CELL)],
         [p("Assessment", CELLB), p("Unit Test 01", CELL)],
         [p("Repository", CELLB),
