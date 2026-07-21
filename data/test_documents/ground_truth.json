@@ -1,0 +1,376 @@
+{
+  "seed": 20260721,
+  "note": "PII offsets are exact by construction (recorded during document assembly, not searched afterwards).",
+  "documents": {
+    "contract.txt": {
+      "source": "CUAD (CC BY 4.0) - real SEC EDGAR services agreement",
+      "doc_type": "contract",
+      "chars": 28009,
+      "pii": [
+        {
+          "start": 55,
+          "end": 81,
+          "text": "Nordvale Systems Pte. Ltd.",
+          "label": "ORGANISATION"
+        },
+        {
+          "start": 423,
+          "end": 437,
+          "text": "Rohan Kulkarni",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 8692,
+          "end": 8707,
+          "text": "Priya Fernandes",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 21027,
+          "end": 21053,
+          "text": "Nordvale Systems Pte. Ltd.",
+          "label": "ORGANISATION"
+        },
+        {
+          "start": 26297,
+          "end": 26311,
+          "text": "Rohan Kulkarni",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 26312,
+          "end": 26327,
+          "text": "Priya Fernandes",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 26390,
+          "end": 26416,
+          "text": "Nordvale Systems Pte. Ltd.",
+          "label": "ORGANISATION"
+        },
+        {
+          "start": 26653,
+          "end": 26667,
+          "text": "Rohan Kulkarni",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 26696,
+          "end": 26698,
+          "text": "14",
+          "label": "BUILDINGNUM"
+        },
+        {
+          "start": 26699,
+          "end": 26720,
+          "text": "Marine Parade Central",
+          "label": "STREET"
+        },
+        {
+          "start": 26722,
+          "end": 26731,
+          "text": "Singapore",
+          "label": "CITY"
+        },
+        {
+          "start": 26732,
+          "end": 26738,
+          "text": "449269",
+          "label": "ZIPCODE"
+        },
+        {
+          "start": 26750,
+          "end": 26781,
+          "text": "r.kulkarni@nordvale.example.com",
+          "label": "EMAIL"
+        },
+        {
+          "start": 26797,
+          "end": 26810,
+          "text": "+65 6555 0142",
+          "label": "TELEPHONENUM"
+        },
+        {
+          "start": 26838,
+          "end": 26848,
+          "text": "200912345K",
+          "label": "TAXNUM"
+        },
+        {
+          "start": 26884,
+          "end": 26899,
+          "text": "Priya Fernandes",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 26921,
+          "end": 26924,
+          "text": "221",
+          "label": "BUILDINGNUM"
+        },
+        {
+          "start": 26925,
+          "end": 26942,
+          "text": "Vishrantwadi Road",
+          "label": "STREET"
+        },
+        {
+          "start": 26944,
+          "end": 26948,
+          "text": "Pune",
+          "label": "CITY"
+        },
+        {
+          "start": 26949,
+          "end": 26955,
+          "text": "411015",
+          "label": "ZIPCODE"
+        },
+        {
+          "start": 26967,
+          "end": 27004,
+          "text": "priya.fernandes@telcostar.example.org",
+          "label": "EMAIL"
+        },
+        {
+          "start": 27020,
+          "end": 27036,
+          "text": "+91 20 5550 8823",
+          "label": "TELEPHONENUM"
+        },
+        {
+          "start": 27176,
+          "end": 27186,
+          "text": "6710044829",
+          "label": "ACCOUNTNUM"
+        },
+        {
+          "start": 27215,
+          "end": 27234,
+          "text": "4024 0071 4412 8899",
+          "label": "CREDITCARDNUMBER"
+        },
+        {
+          "start": 27256,
+          "end": 27272,
+          "text": "nordvale_billing",
+          "label": "USERNAME"
+        }
+      ],
+      "planted_contradictions": [
+        {
+          "id": "payment_terms",
+          "clause_a": "2.6 Recipient shall pay each undisputed invoice within thirty (30) days of receipt",
+          "clause_b": "payments pursuant to this Agreement shall be made within fifteen (15) days after the date of receipt",
+          "origin": "clause_a planted; clause_b is ORIGINAL source text",
+          "note": "Conflicting payment windows: 30 days vs 15 days."
+        },
+        {
+          "id": "governing_law",
+          "clause_a": "10.1 governed by the laws of the Republic of Singapore",
+          "clause_b": "10.2 governed exclusively by the laws of the State of Delaware",
+          "origin": "both planted",
+          "note": "Two mutually exclusive governing-law provisions."
+        },
+        {
+          "id": "termination_notice",
+          "clause_a": "11.1 terminate upon sixty (60) days written notice",
+          "clause_b": "11.4 may not be terminated on less than ninety (90) days notice; the source text separately requires 'at least 90 (ninety) days prior written notice'",
+          "origin": "clause_a planted; clause_b planted AND corroborated by original source text",
+          "note": "The 60-day termination right is void under the 90-day floor."
+        }
+      ]
+    },
+    "medical_report.txt": {
+      "source": "MTSamples via DataFog mirror (CC0) - real de-identified transcription, synthetic PHI header",
+      "doc_type": "medical",
+      "chars": 3149,
+      "pii": [
+        {
+          "start": 140,
+          "end": 151,
+          "text": "Devika Iyer",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 171,
+          "end": 184,
+          "text": "14 March 1979",
+          "label": "DATEOFBIRTH"
+        },
+        {
+          "start": 204,
+          "end": 216,
+          "text": "MVMC-4471982",
+          "label": "IDCARDNUM"
+        },
+        {
+          "start": 236,
+          "end": 247,
+          "text": "412-88-7390",
+          "label": "SOCIALNUM"
+        },
+        {
+          "start": 267,
+          "end": 288,
+          "text": "221 Vishrantwadi Road",
+          "label": "STREET"
+        },
+        {
+          "start": 290,
+          "end": 294,
+          "text": "Pune",
+          "label": "CITY"
+        },
+        {
+          "start": 295,
+          "end": 301,
+          "text": "411015",
+          "label": "ZIPCODE"
+        },
+        {
+          "start": 321,
+          "end": 336,
+          "text": "+91 98220 55017",
+          "label": "TELEPHONENUM"
+        },
+        {
+          "start": 356,
+          "end": 374,
+          "text": "d.iyer@example.net",
+          "label": "EMAIL"
+        },
+        {
+          "start": 398,
+          "end": 414,
+          "text": "Marcus Whitfield",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 434,
+          "end": 447,
+          "text": "HLTH-99120445",
+          "label": "ACCOUNTNUM"
+        },
+        {
+          "start": 3048,
+          "end": 3066,
+          "text": "d.iyer@example.net",
+          "label": "EMAIL"
+        }
+      ],
+      "planted_contradictions": []
+    },
+    "hr_grievance_email.txt": {
+      "source": "Synthetic - authored for this project (see ethical note)",
+      "doc_type": "hr_email",
+      "chars": 1369,
+      "pii": [
+        {
+          "start": 6,
+          "end": 35,
+          "text": "aisha.rahman@example-corp.com",
+          "label": "EMAIL"
+        },
+        {
+          "start": 40,
+          "end": 69,
+          "text": "hr.grievance@example-corp.com",
+          "label": "EMAIL"
+        },
+        {
+          "start": 340,
+          "end": 352,
+          "text": "Aisha Rahman",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 374,
+          "end": 386,
+          "text": "EC-2019-0884",
+          "label": "IDCARDNUM"
+        },
+        {
+          "start": 408,
+          "end": 423,
+          "text": "+31 6 5550 2277",
+          "label": "TELEPHONENUM"
+        },
+        {
+          "start": 445,
+          "end": 447,
+          "text": "48",
+          "label": "BUILDINGNUM"
+        },
+        {
+          "start": 448,
+          "end": 458,
+          "text": "Weena Zuid",
+          "label": "STREET"
+        },
+        {
+          "start": 460,
+          "end": 469,
+          "text": "Rotterdam",
+          "label": "CITY"
+        },
+        {
+          "start": 470,
+          "end": 477,
+          "text": "3012 NC",
+          "label": "ZIPCODE"
+        },
+        {
+          "start": 517,
+          "end": 533,
+          "text": "Thomas Whitfield",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 955,
+          "end": 983,
+          "text": "aisha.r.personal@example.net",
+          "label": "EMAIL"
+        },
+        {
+          "start": 1018,
+          "end": 1030,
+          "text": "Aisha Rahman",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 1043,
+          "end": 1072,
+          "text": "hr.grievance@example-corp.com",
+          "label": "EMAIL"
+        },
+        {
+          "start": 1077,
+          "end": 1106,
+          "text": "aisha.rahman@example-corp.com",
+          "label": "EMAIL"
+        },
+        {
+          "start": 1161,
+          "end": 1166,
+          "text": "Aisha",
+          "label": "FULLNAME"
+        },
+        {
+          "start": 1311,
+          "end": 1324,
+          "text": "GRV-2026-0417",
+          "label": "IDCARDNUM"
+        },
+        {
+          "start": 1336,
+          "end": 1348,
+          "text": "Neha Okonkwo",
+          "label": "FULLNAME"
+        }
+      ],
+      "planted_contradictions": []
+    }
+  }
+}

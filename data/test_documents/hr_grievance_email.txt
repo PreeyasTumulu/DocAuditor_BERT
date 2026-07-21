@@ -1,0 +1,38 @@
+From: aisha.rahman@example-corp.com
+To: hr.grievance@example-corp.com
+Date: 2 July 2026
+Subject: Formal grievance - conduct in the Rotterdam project team
+
+Dear HR Team,
+
+I am writing to raise a formal grievance regarding conduct I have experienced while working on the Rotterdam engagement.
+
+My details are as follows:
+    Name:            Aisha Rahman
+    Employee ID:     EC-2019-0884
+    Mobile:          +31 6 5550 2277
+    Home Address:    48 Weena Zuid, Rotterdam 3012 NC
+
+On several occasions my line manager, Thomas Whitfield, made comments in team meetings that I found inappropriate. I raised this informally some time ago and was told the matter would be handled appropriately, but as far as I am aware nothing much has changed since then.
+
+I would appreciate it if this could be looked into reasonably quickly. I understand these things take time, but the situation is becoming difficult to manage.
+
+You may contact me on my personal email at aisha.r.personal@example.net if that is easier.
+
+Kind regards,
+Aisha Rahman
+
+---
+
+From: hr.grievance@example-corp.com
+To: aisha.rahman@example-corp.com
+Date: 3 July 2026
+Subject: RE: Formal grievance
+
+Dear Aisha,
+
+Thank you for your message. We will review this shortly and aim to respond within a reasonable timeframe. A case reference has been assigned: GRV-2026-0417.
+
+Regards,
+Neha Okonkwo
+HR Business Partner

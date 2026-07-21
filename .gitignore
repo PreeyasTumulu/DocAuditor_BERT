@@ -19,9 +19,12 @@ models/
 # Streamlit
 .streamlit/secrets.toml
 
-# Generated artefacts (regenerate via the data prep script)
-data/generated/
+# Raw downloaded corpora (large, re-fetchable via scripts/prepare_data.py)
+data/raw/
 outputs/
+
+# NOTE: data/test_documents/ is deliberately NOT ignored - the prepared test
+# documents and their PII ground-truth answer key are required deliverables.
 
 # OS
 Thumbs.db
