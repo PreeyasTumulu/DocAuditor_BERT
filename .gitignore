@@ -1,0 +1,33 @@
+# Virtual environment (contains multi-GB torch binaries - never commit)
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hugging Face model cache
+.cache/
+models/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Generated artefacts (regenerate via the data prep script)
+data/generated/
+outputs/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
