@@ -28,8 +28,9 @@ INCLUDE_FILES = [
     "scripts/prepare_data.py",
     "scripts/build_architecture_pdf.py",
     "scripts/make_submission.py",
+    "scripts/fetch_sample_documents.py",
 ]
-INCLUDE_GLOBS = ["data/test_documents/*"]
+INCLUDE_GLOBS = ["data/test_documents/*", "data/sample_documents/*"]
 
 
 def main() -> None:

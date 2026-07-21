@@ -29,6 +29,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # silently yields an empty sample list whenever the app is launched from
 # anywhere other than the project root - which is exactly how it gets run.
 DATA = Path(__file__).resolve().parent / "data" / "test_documents"
+SAMPLES = Path(__file__).resolve().parent / "data" / "sample_documents"
 
 MODELS = {
     "pii":       "iiiorg/piiranha-v1-detect-personal-information",
@@ -524,8 +525,18 @@ st.caption("Encoder-only document intelligence for legal, HR and compliance revi
 
 with st.sidebar:
     st.header("Document")
-    samples = sorted(p.name for p in DATA.glob("*.txt")) if DATA.exists() else []
-    choice = st.selectbox("Sample document", ["-- upload my own --"] + samples)
+    # Annotated corpus (scored in the notebook) plus real-world PDF/DOCX files.
+    catalogue: dict[str, Path] = {}
+    if DATA.exists():
+        for p in sorted(DATA.glob("*.txt")):
+            catalogue[f"{p.name}  (annotated)"] = p
+    if SAMPLES.exists():
+        for p in sorted(SAMPLES.iterdir()):
+            if p.suffix.lower() in {".txt", ".pdf", ".docx"}:
+                catalogue[f"{p.name}  (real)"] = p
+
+    choice = st.selectbox("Sample document",
+                          ["-- upload my own --"] + list(catalogue))
     uploaded = st.file_uploader("Upload a document", type=["txt", "pdf", "docx"])
 
     st.divider()
@@ -546,7 +557,8 @@ if uploaded is not None:
                    "this pipeline reads text, not images.")
         st.stop()
 elif choice and choice != "-- upload my own --":
-    text = (DATA / choice).read_text(encoding="utf-8")
+    path = catalogue[choice]
+    text = extract_text(path.name, path.read_bytes())
 
 if not text:
     st.info("Select a sample document, or upload a TXT, PDF or DOCX file to begin.")
