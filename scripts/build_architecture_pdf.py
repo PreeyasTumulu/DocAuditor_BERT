@@ -233,11 +233,22 @@ def build():
     s = []
 
     # ---- title -----------------------------------------------------------
-    s.append(Spacer(1, 26 * mm))
+    s.append(Spacer(1, 20 * mm))
+    s.append(Paragraph("PIPELINE ARCHITECTURE DOCUMENTATION",
+                       ParagraphStyle("KICKER", parent=SMALL, fontName="Helvetica-Bold",
+                                      fontSize=9, textColor=ACCENT, alignment=TA_CENTER,
+                                      spaceAfter=6)))
     s.append(Paragraph("DocAuditor", TITLE))
     s.append(Paragraph("Encoder-Only Document Intelligence for Legal, HR "
                        "and Compliance Review", SUB))
-    s.append(Spacer(1, 4 * mm))
+    s.append(table([
+        [p("Student", CELLB), p("Preeyas Tumulu", CELL)],
+        [p("Subject", CELLB), p("Generative AI", CELL)],
+        [p("Assessment", CELLB), p("Unit Test 01", CELL)],
+        [p("Repository", CELLB),
+         p("github.com/PreeyasTumulu/DocAuditor_BERT", MONO)],
+    ], [32 * mm, 133 * mm], header=False))
+    s.append(Spacer(1, 6 * mm))
     s.append(callout("Thesis",
         "Every feature in this system is a different output head on the same "
         "family of bidirectional encoders. No generative model is used at any "
@@ -250,8 +261,11 @@ def build():
     s.append(Spacer(1, 8 * mm))
     s.append(table([
         [p("Component", CELLB), p("Deliverable", CELLB)],
-        [p("Pipeline", CELL), p("DocAuditor.ipynb - 36 cells, executes end to end", CELL)],
-        [p("Interface", CELL), p("app.py - Streamlit, standalone", CELL)],
+        [p("Pipeline", CELL),
+         p("DocAuditor.ipynb - 36 cells; all 18 code cells executed with "
+           "saved outputs, no errors", CELL)],
+        [p("Interface", CELL),
+         p("app.py - Streamlit; accepts TXT, PDF and DOCX", CELL)],
         [p("Corpus", CELL), p("3 documents, 54 annotated PII spans, 3 planted defects", CELL)],
         [p("Hardware", CELL), p("NVIDIA RTX 3050, 4 GB VRAM; CUDA 12.1, torch 2.5.1", CELL)],
     ], [42 * mm, 123 * mm]))
@@ -281,6 +295,30 @@ def build():
          p("nli-deberta-v3-base", MONO), p("zero-shot classification", CELL)],
     ], [8 * mm, 34 * mm, 70 * mm, 53 * mm], align_right=(0,)))
     s.append(Spacer(1, 2 * mm))
+
+    s.append(Paragraph("1.2 Requirement mapping", H2))
+    s.append(table([
+        [p("Brief requirement", CELLB), p("Feature", CELLB),
+         p("App tab", CELLB), p("Input formats", CELLB)],
+        [p("Scan for personally identifiable information", CELL),
+         p("PII Scanner", CELL), p("PII Scanner", CELL), p("TXT / PDF / DOCX", CELL)],
+        [p("Ask plain-English questions of the document", CELL),
+         p("Document Q&amp;A", CELL), p("Ask the Document", CELL), p("TXT / PDF / DOCX", CELL)],
+        [p("Writing assistant to test ambiguous language", CELL),
+         p("Ambiguity Meter", CELL), p("Ambiguity Meter", CELL), p("free text or document", CELL)],
+        [p("Feature of choice #1", CELL),
+         p("Contradiction Detector", CELL), p("Contradictions", CELL), p("TXT / PDF / DOCX", CELL)],
+        [p("Feature of choice #2", CELL),
+         p("Document Auto-Router", CELL), p("Router", CELL), p("TXT / PDF / DOCX", CELL)],
+    ], [56 * mm, 36 * mm, 34 * mm, 39 * mm]))
+    s.append(Spacer(1, 2 * mm))
+    s.append(p("DOCX tables are flattened row by row rather than read as "
+               "paragraphs: contract schedules and HR forms keep much of their "
+               "sensitive detail inside tables, which a paragraph-only reader "
+               "drops silently. Scanned PDFs are rejected with an explanatory "
+               "message - this pipeline reads text, not images, and OCR is out "
+               "of scope.", SMALL))
+
     s.append(p("<b>Are these all BERT?</b> Yes. RoBERTa is BERT with improved "
                "pretraining (no next-sentence prediction, dynamic masking). "
                "DeBERTa-v3 is BERT with disentangled attention and "

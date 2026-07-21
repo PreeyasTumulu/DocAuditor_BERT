@@ -193,11 +193,41 @@ default setting, including the planted governing-law conflict.
 ## Files
 
 ```
-DocAuditor.ipynb          the full pipeline, documented and runnable
-app.py                    Streamlit UI (streamlit run app.py)
-data/test_documents/      3 documents + ground_truth.json
-scripts/prepare_data.py   corpus preparation, fixed seed
+DocAuditor.ipynb                    the full pipeline, with saved outputs
+DocAuditor_Architecture.pdf         architecture documentation
+app.py                              Streamlit UI (streamlit run app.py)
+requirements.txt                    pinned, verified versions
+data/test_documents/                3 documents + ground_truth.json
+scripts/prepare_data.py             corpus preparation, fixed seed
+scripts/build_architecture_pdf.py   regenerates the PDF
+scripts/make_submission.py          builds the submission zip
 ```
+
+## Running it
+
+```bash
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cu121
+.venv/Scripts/python.exe -m pip install -r requirements.txt
+
+# Streamlit app
+.venv/Scripts/python.exe -m streamlit run app.py
+
+# Re-execute the notebook (register the venv as a kernel first, otherwise
+# Jupyter silently uses the system Python and every import fails)
+.venv/Scripts/python.exe -m ipykernel install --user --name docauditor
+.venv/Scripts/python.exe -m jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.kernel_name=docauditor DocAuditor.ipynb
+```
+
+**Input formats:** TXT, PDF and DOCX. DOCX tables are flattened row by row,
+since contract schedules and HR forms keep much of their sensitive detail in
+tables. Scanned PDFs are rejected with an explanatory message — this pipeline
+reads text, not images, and OCR is out of scope.
+
+The `.venv` directory is intentionally not committed and not shipped in the
+submission zip: it is several gigabytes of platform-specific binaries that
+would not run on another machine anyway. `requirements.txt` reproduces it.
 
 `app.py` restates the pipeline functions rather than importing them, so each
 file runs standalone. The duplication is deliberate but real: a threshold

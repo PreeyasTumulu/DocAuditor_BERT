@@ -34,3 +34,6 @@ desktop.ini
 # Editors
 .vscode/
 .idea/
+
+# Submission artefact - rebuild with scripts/make_submission.py
+*.zip

@@ -192,6 +192,42 @@ def segment_clauses(text, min_chars=60, max_chars=1200):
     return out
 
 
+def extract_text(file_name: str, data: bytes) -> str:
+    """Read TXT, PDF or DOCX into plain text.
+
+    The brief asks for "raw business documents", which in practice arrive as
+    PDF and DOCX far more often than .txt. DOCX tables are flattened row by
+    row because contract schedules and HR forms put most of their sensitive
+    detail inside tables, which a paragraph-only reader would silently drop.
+    """
+    suffix = file_name.rsplit(".", 1)[-1].lower() if "." in file_name else ""
+
+    if suffix == "txt":
+        return data.decode("utf-8", errors="replace")
+
+    if suffix == "pdf":
+        import fitz  # PyMuPDF
+        with fitz.open(stream=data, filetype="pdf") as doc:
+            return "\n".join(page.get_text() for page in doc)
+
+    if suffix == "docx":
+        from io import BytesIO
+        from docx import Document
+        doc = Document(BytesIO(data))
+        parts = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+        for n, table in enumerate(doc.tables, start=1):
+            for row in table.rows:
+                # Merged cells repeat in python-docx, so de-duplicate per row.
+                cells = list(dict.fromkeys(
+                    re.sub(r"\s+", " ", c.text).strip() for c in row.cells
+                    if c.text.strip()))
+                if cells:
+                    parts.append(f"[Table {n}] " + " | ".join(cells))
+        return "\n".join(parts)
+
+    raise ValueError(f"Unsupported file type '.{suffix}'. Upload TXT, PDF or DOCX.")
+
+
 def representative_excerpt(text, max_chars=2000):
     if len(text) <= max_chars:
         return text
@@ -490,7 +526,7 @@ with st.sidebar:
     st.header("Document")
     samples = sorted(p.name for p in DATA.glob("*.txt")) if DATA.exists() else []
     choice = st.selectbox("Sample document", ["-- upload my own --"] + samples)
-    uploaded = st.file_uploader("Upload a .txt document", type=["txt"])
+    uploaded = st.file_uploader("Upload a document", type=["txt", "pdf", "docx"])
 
     st.divider()
     st.caption(f"Device: **{DEVICE}**")
@@ -500,12 +536,20 @@ with st.sidebar:
 
 text = None
 if uploaded is not None:
-    text = uploaded.read().decode("utf-8", errors="replace")
+    try:
+        text = extract_text(uploaded.name, uploaded.getvalue())
+    except Exception as err:
+        st.error(f"Could not read that document: {err}")
+        st.stop()
+    if not text.strip():
+        st.warning("No text could be extracted. A scanned PDF needs OCR first — "
+                   "this pipeline reads text, not images.")
+        st.stop()
 elif choice and choice != "-- upload my own --":
     text = (DATA / choice).read_text(encoding="utf-8")
 
 if not text:
-    st.info("Select a sample document or upload a .txt file to begin.")
+    st.info("Select a sample document, or upload a TXT, PDF or DOCX file to begin.")
     st.stop()
 
 clauses = segment_clauses(text)
