@@ -1,0 +1,8 @@
+# Binary files must never have line endings rewritten. Without this, Git on
+# Windows converts LF to CRLF inside the PDF and corrupts it on checkout.
+*.pdf binary
+*.png binary
+*.jpg binary
+
+# Notebooks are JSON: keep them LF so diffs stay stable across platforms.
+*.ipynb text eol=lf
