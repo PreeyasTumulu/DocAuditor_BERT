@@ -16,33 +16,67 @@ team could deploy it.
 
 ## Architecture
 
-Documents flow through a shared preprocessing stage (parse -> segment into
-clauses -> encode), then fan out to independent task heads:
+A document is parsed, segmented into clauses and encoded once. The resulting
+clause set then fans out to five independent task heads:
 
 ```
-                       +--> [1] PII Scanner        (token classification)
-                       |
-  document --> parse --+--> [2] Document Q&A       (retrieval + extractive QA)
-              segment  |
-              encode   +--> [3] Ambiguity Meter    (MLM entropy + NLI)
-                       |
-                       +--> [4] TBD
-                       |
-                       +--> [5] TBD
+                              +--> [1] PII Scanner       token classification
+                              |
+  document                    +--> [2] Document Q&A      retrieval + span QA
+     |                        |
+     v                        +--> [3] Ambiguity Meter   MLM entropy + NLI
+  parse -> segment -> encode -+
+     |                        +--> [4] Contradiction     embed-filter + NLI
+     v                        |        Detector
+  [5] Auto-Router ------------+
+   (routes to the
+    correct policy)
 ```
 
-## Feature status
+The router runs first and selects the PII policy and clause conventions used
+by the remaining heads (PHI rules for medical records, clause rules for
+contracts).
 
-| # | Feature | Model | Head | Status |
-|---|---------|-------|------|--------|
-| 1 | PII Scanner | `iiiorg/piiranha-v1-detect-personal-information` | Token classification | Planned |
-| 2 | Document Q&A | `all-MiniLM-L6-v2` + `deepset/roberta-base-squad2` | Bi-encoder + span QA | Planned |
-| 3 | Ambiguity Meter | `bert-base-uncased` + `cross-encoder/nli-deberta-v3-base` | MLM entropy + NLI | Planned |
-| 4 | *(to be selected)* | — | — | Not chosen |
-| 5 | *(to be selected)* | — | — | Not chosen |
+### The governing constraint
 
-Features 1-3 are required by the assignment brief. Features 4-5 are the two
-free-choice features and have not been selected yet.
+The prepared contract is **28,009 characters, roughly 6,100 word-piece tokens
+-- about 12x BERT's 512-token limit**. Every design decision below follows from
+that single fact:
+
+- Q&A cannot read the document, so it **retrieves** candidate passages first.
+- Contradiction detection cannot compare everything to everything, so it
+  **filters candidate pairs by embedding similarity** before invoking the
+  expensive cross-encoder.
+- The router cannot see the whole document, so it classifies from a
+  **representative excerpt**.
+
+## Features
+
+| # | Feature | Model | Head |
+|---|---------|-------|------|
+| 1 | PII Scanner | `iiiorg/piiranha-v1-detect-personal-information` | Token classification |
+| 2 | Document Q&A | `all-MiniLM-L6-v2` + `deepset/roberta-base-squad2` | Bi-encoder + span QA |
+| 3 | Ambiguity Meter | `bert-base-uncased` + `cross-encoder/nli-deberta-v3-base` | MLM entropy + NLI |
+| 4 | Cross-Clause Contradiction Detector | `all-MiniLM-L6-v2` + `cross-encoder/nli-deberta-v3-base` | Bi-encoder filter + NLI |
+| 5 | Document Auto-Router | `cross-encoder/nli-deberta-v3-base` | Zero-shot classification |
+
+Features 1-3 are required by the brief; 4 and 5 are the free-choice features.
+
+**Why these two.** The contradiction detector uses the NLI model's *native*
+`contradiction` output rather than repurposing a model for an unintended task,
+and it is a genuine compliance workflow currently done by hand. The router
+turns the three-document test corpus into a designed capability rather than
+three separate demos. Both reuse models already loaded for feature 3, so the
+marginal cost is close to zero.
+
+### Known limitation
+
+Extractive QA can only return spans that **literally appear** in the document.
+Asked "what are the risks here?", it will fail, because that answer is written
+nowhere. This is an inherent property of encoder-only architecture, not a bug.
+It is mitigated with a confidence floor that returns *"not stated in
+document"* rather than a low-confidence guess -- an honest abstention, which
+for a compliance tool is the correct behaviour.
 
 ## Model family note
 
@@ -67,6 +101,33 @@ key rather than merely demonstrated.
 The HR thread is deliberately synthetic: real grievance correspondence is not
 public for good reason, and available real-email corpora contain un-consented
 personal data.
+
+### Prepared corpus
+
+Regenerate with `python scripts/prepare_data.py` (fixed seed, reproducible).
+
+| Document | Chars | PII spans | Contradictions |
+|----------|------:|----------:|---------------:|
+| `contract.txt` | 28,009 | 25 | 3 |
+| `medical_report.txt` | 3,149 | 12 | 0 |
+| `hr_grievance_email.txt` | 1,369 | 17 | 0 |
+| **Total** | **32,527** | **54** | **3** |
+
+54 PII spans across 15 label types. Offsets are exact **by construction** --
+recorded while the document is assembled, not searched for afterwards -- and
+the prep script asserts every offset against the written file before exiting,
+so a broken answer key fails loudly rather than silently.
+
+Note that the CUAD source contains essentially no PII of its own: SEC filings
+are pre-redacted, with sensitive values replaced by `[ * * * ]`. Those markers
+are used as the injection anchors, placing synthetic PII exactly where real
+PII was removed.
+
+Two of the three planted contradictions were **verified against the source
+text** rather than assumed. The original agreement independently specifies a
+15-day payment window and a 90-day termination notice, so the planted 30-day
+and 60-day clauses conflict with real contract language, not merely with each
+other.
 
 ## Setup
 
