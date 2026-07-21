@@ -118,10 +118,23 @@ recorded while the document is assembled, not searched for afterwards -- and
 the prep script asserts every offset against the written file before exiting,
 so a broken answer key fails loudly rather than silently.
 
-Note that the CUAD source contains essentially no PII of its own: SEC filings
-are pre-redacted, with sensitive values replaced by `[ * * * ]`. Those markers
-are used as the injection anchors, placing synthetic PII exactly where real
-PII was removed.
+The corpus was built assuming the CUAD source contained no PII of its own,
+since SEC filings redact sensitive values as `[ * * * ]`. Those markers were
+used as the injection anchors.
+
+**That assumption was wrong, and the scanner disproved it.** The redactions
+cover commercially sensitive commercial terms, not personal data: real names,
+e-mail addresses, telephone numbers and street addresses survive untouched in
+the notice blocks of the published filing. What the first evaluation scored as
+false positives were all correct detections, and the answer key had to be
+extended after manually verifying each one.
+
+A tool built to find personal data in documents found personal data that a
+regulatory filing process had missed — on real, public data. That is the
+compliance use case, demonstrated by accident.
+
+Note therefore that `data/test_documents/contract.txt` contains real (though
+publicly filed) personal data, inherited from the SEC source.
 
 Two of the three planted contradictions were **verified against the source
 text** rather than assumed. The original agreement independently specifies a
@@ -140,9 +153,59 @@ python -m venv .venv
 Verified on Python 3.12 with torch 2.5.1+cu121, transformers 5.14.1,
 CUDA enabled on a 4 GB RTX 3050.
 
+## Results
+
+Measured on the prepared corpus; every figure is reproducible by running the
+notebook top to bottom.
+
+**PII scanner** (span-overlap scoring, adjudicated key)
+
+| Document | TP | FP | FN | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| `contract.txt` | 32 | 7 | 5 | 82.1% | 86.5% | 84.2% |
+| `medical_report.txt` | 9 | 7 | 3 | 56.3% | 75.0% | 64.3% |
+| `hr_grievance_email.txt` | 13 | 4 | 4 | 76.5% | 76.5% | 76.5% |
+| **Overall** | **54** | **18** | **12** | **75.0%** | **81.8%** | **78.3%** |
+
+**Auto-router** — all three documents classified correctly
+(contract 95%, HR email 99%, medical 65%).
+
+**Contradiction detector** — 67 clauses, 2,211 possible pairs, **97% filtered
+out** by the bi-encoder before the cross-encoder runs; 9 findings at the
+default setting, including the planted governing-law conflict.
+
+### Honest limitations
+
+- **Contradiction precision is weak.** 9 findings contain roughly one true
+  defect. The shortlist is reviewable, but this is a triage aid, not an
+  oracle. The cause is domain mismatch: NLI is trained on short everyday
+  sentences, not hedged legal prose.
+- **One planted defect is missed** at the default setting. Its source language
+  sits in a 1,145-character clause, above the length cap that makes the output
+  reviewable. Raising the cap recovers it and returns ~102 findings instead
+  of 9. The notebook measures this trade-off rather than hiding it.
+- **Extractive QA cannot answer "summarise the risks"** — only spans that
+  literally exist. It abstains below a confidence floor instead of guessing.
+- **Requiring symmetric contradiction was tried and rejected.** It cut false
+  positives but scored every true defect at 0.007–0.067; these contradictions
+  are strongly asymmetric in practice.
+
+## Files
+
+```
+DocAuditor.ipynb          the full pipeline, documented and runnable
+app.py                    Streamlit UI (streamlit run app.py)
+data/test_documents/      3 documents + ground_truth.json
+scripts/prepare_data.py   corpus preparation, fixed seed
+```
+
+`app.py` restates the pipeline functions rather than importing them, so each
+file runs standalone. The duplication is deliberate but real: a threshold
+changed in one must be changed in the other.
+
 ## Deliverables
 
 - [ ] Pipeline architecture documentation (`.pdf`)
-- [ ] Documented working pipeline (`.ipynb`)
-- [ ] Test documents
-- [ ] Streamlit application
+- [x] Documented working pipeline (`.ipynb`) — 36 cells, executes end to end
+- [x] Test documents
+- [x] Streamlit application
